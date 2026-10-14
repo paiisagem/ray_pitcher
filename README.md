@@ -29,6 +29,7 @@ index.html      conteúdo: hero, história, ficha
 css/style.css   tema (gaiola de rebatidas à noite) e efeitos
 js/main.js      pontos da ficha e o vórtice do Nimbus
 js/effects.js   giroscópio do cursor e os gatilhos force / space
+js/background.js  bolas em line art atrás da história
 ```
 
 Fontes via Google Fonts: Big Shoulders Display, Barlow e IBM Plex Mono. A bola de beisebol do cursor usa Three.js (r128, via cdnjs).

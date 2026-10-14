@@ -146,8 +146,10 @@ b { font-weight: 600; }
 .concept { margin: 4px 0 0; font-size: 1.15rem; color: var(--giz-2); max-width: 40ch; }
 
 /* ---------- história ---------- */
-.story { padding: clamp(48px, 7vw, 96px) var(--gutter); border-bottom: 1px solid var(--grade); }
-.story-inner { max-width: var(--measure); margin: 0 auto; }
+.story { position: relative; padding: clamp(48px, 7vw, 96px) var(--gutter); border-bottom: 1px solid var(--grade); overflow: hidden; }
+.story-inner { position: relative; z-index: 1; max-width: var(--measure); margin: 0 auto; }
+/* bolas em line art passando atrás do texto */
+.story-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 .story-head { margin-bottom: 40px; }
 .story-head h2 {
   margin: 0;
