@@ -42,13 +42,17 @@
 
     function resize() {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = window.innerWidth; H = window.innerHeight;
+      // mede o próprio canvas: a janela inclui a barra de rolagem, o canvas não,
+      // e essa diferença deslocava os anéis em relação à bola
+      const rect = cv.getBoundingClientRect();
+      W = rect.width; H = rect.height;
       cv.width = Math.floor(W * dpr);
       cv.height = Math.floor(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resize();
     window.addEventListener('resize', resize);
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(cv);
 
     // três anéis do gimbal: raio, achatamento, inclinação, velocidade, precessão, partículas
     const rings = [
