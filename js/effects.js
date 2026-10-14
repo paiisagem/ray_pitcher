@@ -1,89 +1,16 @@
 /* PITCHER · efeitos
-   1. Energia cinética: letras perto do mouse tremem.
+   1. Giroscópio no cursor: três anéis de partículas giram ao redor do
+      mouse e aceleram quando ele se move rápido.
    2. "force" → a página some, o vórtice do hero toma a tela e ganha
                 potência até FORÇAS ●●●. Depois volta ao normal.
-   3. "space" → igual, mas no pico tudo é sugado para um ponto e
-                some. Fica só ESPAÇO ●●●.
+   3. "space" → igual, mas o olho do vórtice vira um buraco que engole
+                tudo. Fica só ESPAÇO ●●●.
 */
 (function () {
   'use strict';
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const root = document.querySelector('main');
-  if (!root) return;
-
-  /* ============================================================
-     divide todo o texto de <main> em palavras e letras
-     ============================================================ */
-  const SKIP = new Set(['SCRIPT', 'STYLE', 'CANVAS']);
-
-  function splitTextNode(node) {
-    const text = node.nodeValue;
-    if (!text.trim()) return;
-    const frag = document.createDocumentFragment();
-    text.split(/(\s+)/).forEach(tok => {
-      if (!tok) return;
-      if (/^\s+$/.test(tok)) { frag.appendChild(document.createTextNode(tok)); return; }
-      const w = document.createElement('span');
-      w.className = 'w';
-      for (const c of tok) {
-        const s = document.createElement('span');
-        s.className = 'ch';
-        s.textContent = c;
-        w.appendChild(s);
-      }
-      frag.appendChild(w);
-    });
-    node.parentNode.replaceChild(frag, node);
-  }
-
-  function collectTextNodes(el, out) {
-    for (const n of Array.from(el.childNodes)) {
-      if (n.nodeType === 3) out.push(n);
-      else if (n.nodeType === 1 && !SKIP.has(n.tagName) && !n.classList.contains('dots')) collectTextNodes(n, out);
-    }
-  }
-
-  root.querySelectorAll('.dropcap').forEach(p => {
-    const first = p.firstChild;
-    if (!first || first.nodeType !== 3) return;
-    const cap = document.createElement('span');
-    cap.className = 'cap ch';
-    cap.textContent = first.nodeValue.charAt(0);
-    first.nodeValue = first.nodeValue.slice(1);
-    p.insertBefore(cap, first);
-  });
-
-  root.querySelectorAll('*').forEach(el => {
-    const d = getComputedStyle(el).display;
-    if (d !== 'flex' && d !== 'inline-flex' && d !== 'grid') return;
-    Array.from(el.childNodes).forEach(n => {
-      if (n.nodeType === 3 && n.nodeValue.trim()) {
-        const wrap = document.createElement('span');
-        wrap.className = 't';
-        el.replaceChild(wrap, n);
-        wrap.appendChild(n);
-      }
-    });
-  });
-
-  const nodes = [];
-  collectTextNodes(root, nodes);
-  nodes.forEach(splitTextNode);
-
-  /* ============================================================
-     utilidades
-     ============================================================ */
-  function shake(ch, k, c) {
-    ch.style.setProperty('--k', k.toFixed(2));
-    ch.style.setProperty('--c', c.toFixed(1));
-    ch.classList.add('kin');
-  }
-  function calm(ch) {
-    ch.classList.remove('kin');
-    ch.style.removeProperty('--k');
-    ch.style.removeProperty('--c');
-  }
+  let fxRunning = false;
 
   const smooth = (a, b, x) => { const p = Math.min(1, Math.max(0, (x - a) / (b - a))); return p * p * (3 - 2 * p); };
 
@@ -99,44 +26,95 @@
   }
 
   /* ============================================================
-     1. tremor cinético perto do mouse
+     1. giroscópio no cursor
      ============================================================ */
-  const RADIUS = 150;
-  let hot = new Set();
-  let pending = null;
-  let fxRunning = false;
+  if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
+    const cv = document.createElement('canvas');
+    cv.id = 'cursor-gyro';
+    cv.className = 'fx-canvas';
+    document.body.appendChild(cv);
+    const ctx = cv.getContext('2d');
+    let W = 0, H = 0;
 
-  function kinetic(x, y) {
-    const el = document.elementFromPoint(x, y);
-    const next = new Set();
-    if (el) {
-      const block = el.closest('p, h1, h2, h3, li, dt, dd, .t');
-      const blocks = block ? [block.previousElementSibling, block, block.nextElementSibling].filter(Boolean) : [];
-      for (const b of blocks) {
-        for (const ch of b.querySelectorAll('.ch')) {
-          const r = ch.getBoundingClientRect();
-          const d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
-          if (d < RADIUS) {
-            const e = Math.pow(1 - d / RADIUS, 1.6);
-            shake(ch, 0.4 + e * 2.8, e * 60);
-            next.add(ch);
-          }
+    function resize() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = Math.floor(W * dpr);
+      cv.height = Math.floor(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // três anéis do gimbal: raio, achatamento, inclinação, velocidade, precessão, partículas
+    const rings = [
+      { R: 22, ry: 0.35, tilt: 0.4, w: 3.2, prec: 0.9, n: 12, warm: 0.5 },
+      { R: 34, ry: 0.6, tilt: -1.1, w: -2.3, prec: -0.6, n: 16, warm: 0.2 },
+      { R: 46, ry: 0.9, tilt: 1.6, w: 1.6, prec: 0.4, n: 20, warm: 0.1 }
+    ];
+    const dots = [];
+    rings.forEach((rg, ri) => {
+      for (let i = 0; i < rg.n; i++) {
+        dots.push({ ring: ri, th: i / rg.n * Math.PI * 2 + Math.random() * 0.2, warm: Math.random() < rg.warm, s: 1.2 + Math.random() * 1.2 });
+      }
+    });
+
+    let mx = -999, my = -999;      // mouse
+    let px = -999, py = -999;      // centro do giroscópio (segue com atraso)
+    let inside = false;
+    let lastMove = 0;
+    let spin = 0, boost = 0, vis = 0;
+    let last = performance.now();
+
+    document.addEventListener('mousemove', e => {
+      if (!inside) { px = e.clientX; py = e.clientY; }
+      mx = e.clientX; my = e.clientY;
+      inside = true;
+      lastMove = performance.now();
+    });
+    document.addEventListener('mouseleave', () => { inside = false; });
+
+    function frame(now) {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+
+      // o centro persegue o cursor; a distância vira impulso de rotação
+      const dx = mx - px, dy = my - py;
+      px += dx * 0.22; py += dy * 0.22;
+      const v = Math.hypot(dx, dy);
+      boost += (Math.min(4, v / 18) - boost) * 0.1;
+      spin += dt * (1 + boost);
+
+      // visível com o mouse na página, meio apagado parado, some nos efeitos
+      const idle = now - lastMove > 1800;
+      const target = (!inside || fxRunning) ? 0 : (idle ? 0.45 : 1);
+      vis += (target - vis) * 0.08;
+
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
+
+      if (vis > 0.01) {
+        const grow = 1 + boost * 0.12;    // anéis abrem um pouco com velocidade
+        for (const d of dots) {
+          const rg = rings[d.ring];
+          const a = d.th + spin * rg.w;
+          const phi = rg.tilt + spin * rg.prec * 0.3;
+          const R = rg.R * grow;
+          const lx = Math.cos(a) * R, ly = Math.sin(a) * R * rg.ry;
+          const x = px + lx * Math.cos(phi) - ly * Math.sin(phi);
+          const y = py + lx * Math.sin(phi) + ly * Math.cos(phi);
+          // a metade "de trás" do anel fica mais fraca: dá volume
+          const depth = 0.55 + 0.45 * (Math.sin(a) + 1) / 2;
+          const al = vis * depth * (d.warm ? 0.95 : 0.7);
+          ctx.fillStyle = d.warm ? 'rgba(255,182,72,' + al + ')' : 'rgba(239,232,216,' + al + ')';
+          ctx.fillRect(x - d.s / 2, y - d.s / 2, d.s, d.s);
         }
       }
+      requestAnimationFrame(frame);
     }
-    for (const ch of hot) if (!next.has(ch)) calm(ch);
-    hot = next;
+    requestAnimationFrame(frame);
   }
-
-  if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
-    document.addEventListener('mousemove', e => {
-      if (pending || fxRunning) return;
-      pending = requestAnimationFrame(() => { pending = null; kinetic(e.clientX, e.clientY); });
-    });
-    document.addEventListener('mouseleave', () => kinetic(-9999, -9999));
-  }
-
-  function clearHot() { for (const ch of hot) calm(ch); hot = new Set(); }
 
   /* ============================================================
      teclado: "space" e "force"
@@ -168,7 +146,6 @@
   function forceEffect() {
     if (fxRunning || !window.pitcherVortex) return;
     fxRunning = true;
-    clearHot();
 
     const vortex = window.pitcherVortex;
     const RAMP_END = 5.1;    // potência chega ao máximo
@@ -204,13 +181,12 @@
   }
 
   /* ============================================================
-     3. "space" → o vórtice ganha potência e é sugado para um ponto
+     3. "space" → o olho do vórtice vira um buraco que engole tudo
         → fica só ESPAÇO ●●●
      ============================================================ */
   function spaceEffect() {
     if (fxRunning || !window.pitcherVortex) return;
     fxRunning = true;
-    clearHot();
 
     const vortex = window.pitcherVortex;
     const CENTER_END = 2.1;    // olho do vórtice chega ao meio da tela

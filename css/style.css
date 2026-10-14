@@ -185,7 +185,7 @@ b { font-weight: 600; }
 .chapter h3::after { content: ""; flex: 1; height: 1px; background: var(--grade); }
 .chapter p { margin: 0 0 1em; font-size: 1.08rem; line-height: 1.65; }
 .chapter p:last-child { margin-bottom: 0; }
-.dropcap::first-letter, .dropcap .cap {
+.dropcap::first-letter {
   font-family: var(--f-display);
   font-weight: 900;
   font-size: 4.2em;
@@ -307,31 +307,8 @@ b { font-weight: 600; }
 }
 
 /* ============================================================
-   efeitos: letras divididas, tremor cinético, vazio
+   efeitos: canvas por cima da página, foco no hero, ARCANA
    ============================================================ */
-.w { display: inline-block; white-space: nowrap; }
-.ch { display: inline-block; }
-.cap { display: block; }
-
-@keyframes kin {
-  0%   { transform: translate(calc(var(--k) * 1px),   calc(var(--k) * -.6px)) rotate(calc(var(--k) * 1.2deg)); }
-  25%  { transform: translate(calc(var(--k) * -.8px), calc(var(--k) * .9px))  rotate(calc(var(--k) * -1deg)); }
-  50%  { transform: translate(calc(var(--k) * .6px),  calc(var(--k) * 1px))   rotate(calc(var(--k) * .8deg)); }
-  75%  { transform: translate(calc(var(--k) * -1px),  calc(var(--k) * -.7px)) rotate(calc(var(--k) * -1.3deg)); }
-  100% { transform: translate(calc(var(--k) * .9px),  calc(var(--k) * -.4px)) rotate(calc(var(--k) * 1.1deg)); }
-}
-/* --k: amplitude do tremor · --c: quanto de amarelo (0 a 100) */
-.ch.kin {
-  --k: 1;
-  --c: 40;
-  animation: kin .11s steps(1) infinite;
-  color: color-mix(in srgb, currentColor calc(100% - var(--c) * 1%), var(--sodio));
-  text-shadow: 0 0 6px color-mix(in srgb, var(--sodio) calc(var(--c) * 1%), transparent);
-}
-.ch.kin:nth-child(2n)   { animation-delay: -.03s; }
-.ch.kin:nth-child(3n)   { animation-delay: -.07s; animation-direction: reverse; }
-.ch.kin:nth-child(5n)   { animation-duration: .09s; }
-
 .fx-canvas {
   position: fixed;
   inset: 0;

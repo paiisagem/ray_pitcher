@@ -20,7 +20,7 @@ Com a página aberta, digite no teclado:
 - `force` — o vórtice do hero toma a tela e ganha potência, com raios entre as partículas. **FORÇAS ●●●**
 - `space` — o olho do vórtice vira um buraco que engole tudo. **ESPAÇO ●●●**
 
-Passar o mouse sobre o texto faz as letras tremerem com energia cinética.
+Um giroscópio de partículas acompanha o cursor e acelera quando o mouse se move rápido.
 
 ## Estrutura
 
@@ -28,7 +28,7 @@ Passar o mouse sobre o texto faz as letras tremerem com energia cinética.
 index.html      conteúdo: hero, história, ficha
 css/style.css   tema (gaiola de rebatidas à noite) e efeitos
 js/main.js      pontos da ficha e o vórtice do Nimbus
-js/effects.js   tremor das letras e os gatilhos force / space
+js/effects.js   giroscópio do cursor e os gatilhos force / space
 ```
 
 Fontes via Google Fonts: Big Shoulders Display, Barlow e IBM Plex Mono.
