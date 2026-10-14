@@ -145,7 +145,7 @@
     }
 
     /* ---------- a bola de beisebol ---------- */
-    const BALL_PX = 18;            // diâmetro na tela
+    const BALL_PX = 13;            // diâmetro na tela
     const ballEl = document.createElement('canvas');
     ballEl.id = 'cursor-ball';
     document.body.appendChild(ballEl);
@@ -275,9 +275,9 @@
     function frame(now) {
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
 
-      // o centro dos anéis persegue a bola; a distância vira impulso de rotação
+      // os anéis ficam cravados na bola; a velocidade do mouse vira impulso de rotação
       const dx = mx - px, dy = my - py;
-      px += dx * 0.22; py += dy * 0.22;
+      px = mx; py = my;
       const v = Math.hypot(dx, dy);
       boost += (Math.min(4, v / 18) - boost) * 0.1;
       spin += dt * (1 + boost);
