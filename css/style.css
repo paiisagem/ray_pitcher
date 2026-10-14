@@ -1,0 +1,389 @@
+/* ============================================================
+   PITCHER · Ray Yani
+   Layout: hero com o vórtice, a história em coluna de leitura,
+   depois a ficha inteira num único bloco denso de consulta.
+   Tema único, escuro por escolha (gaiola de rebatidas à noite).
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* cor */
+  --asfalto: #0b0c10;        /* fundo */
+  --cage:    #15171d;        /* superfície */
+  --grade:   #2c3039;        /* arame, bordas */
+  --giz:     #efe8d8;        /* texto */
+  --giz-2:   #a9a393;        /* texto secundário */
+  --couro:   #b58b55;        /* luva, rótulos */
+  --costura: #e24b2f;        /* costura da bola, acento */
+  --sodio:   #ffb648;        /* holofote */
+
+  /* tipo */
+  --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --f-body: "Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+
+  --measure: 66ch;
+  --gutter: clamp(16px, 4vw, 40px);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--asfalto);
+  color: var(--giz);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; }
+a { color: inherit; }
+b { font-weight: 600; }
+:focus-visible { outline: 2px solid var(--sodio); outline-offset: 3px; }
+
+/* ---------- barra superior ---------- */
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px var(--gutter);
+  background: color-mix(in srgb, var(--asfalto) 86%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--grade);
+}
+.brand {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: .06em;
+  text-decoration: none;
+}
+.nav { display: flex; gap: 20px; }
+.nav a {
+  text-decoration: none;
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--giz-2);
+}
+.nav a:hover { color: var(--giz); }
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(56px, 10vw, 120px) var(--gutter) clamp(40px, 6vw, 72px);
+  overflow: hidden;
+  border-bottom: 1px solid var(--grade);
+  background: var(--asfalto);
+}
+/* holofote + arame da gaiola, num pseudo-elemento para poder sumir */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% -10%, color-mix(in srgb, var(--sodio) 22%, transparent), transparent 70%),
+    repeating-linear-gradient(45deg, transparent 0 22px, color-mix(in srgb, var(--grade) 55%, transparent) 22px 23px),
+    repeating-linear-gradient(-45deg, transparent 0 22px, color-mix(in srgb, var(--grade) 55%, transparent) 22px 23px);
+  transition: opacity 1.2s ease;
+}
+.hero-inner, body > header, body > footer, main > * { transition: opacity 1.2s ease; }
+.vortex {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.eyebrow {
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: .78rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--couro);
+}
+.title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: clamp(5rem, 22vw, 15rem);
+  line-height: .82;
+  letter-spacing: .01em;
+  text-wrap: balance;
+  text-shadow: 0 0 40px color-mix(in srgb, var(--sodio) 25%, transparent);
+}
+.truename {
+  margin: 10px 0 0;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--costura);
+}
+.concept { margin: 4px 0 0; font-size: 1.15rem; color: var(--giz-2); max-width: 40ch; }
+
+/* ---------- história ---------- */
+.story { padding: clamp(48px, 7vw, 96px) var(--gutter); border-bottom: 1px solid var(--grade); }
+.story-inner { max-width: var(--measure); margin: 0 auto; }
+.story-head { margin-bottom: 40px; }
+.story-head h2 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+  line-height: .95;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.story-head p {
+  margin: 6px 0 0;
+  font-family: var(--f-mono);
+  font-size: .8rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--costura);
+}
+.chapter { margin-bottom: 44px; }
+.chapter:last-child { margin-bottom: 0; }
+.chapter h3 {
+  margin: 0 0 14px;
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.chapter h3::after { content: ""; flex: 1; height: 1px; background: var(--grade); }
+.chapter p { margin: 0 0 1em; font-size: 1.08rem; line-height: 1.65; }
+.chapter p:last-child { margin-bottom: 0; }
+.dropcap::first-letter, .dropcap .cap {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: 4.2em;
+  line-height: .78;
+  float: left;
+  padding: 6px 10px 0 0;
+  color: var(--costura);
+}
+.radar-line b { font-family: var(--f-mono); font-weight: 600; color: var(--sodio); white-space: nowrap; }
+.closing { padding-left: 16px; border-left: 3px solid var(--costura); font-weight: 500; }
+
+/* ---------- ficha compacta ---------- */
+.sheet { padding: clamp(40px, 6vw, 72px) var(--gutter); font-size: .9rem; line-height: 1.4; }
+.sheet-inner { max-width: 1120px; margin: 0 auto; }
+.sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; margin-bottom: 18px; }
+.sheet-head h2 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  line-height: 1;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.sheet-head p { margin: 0; font-family: var(--f-mono); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--couro); }
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--grade);
+  border: 1px solid var(--grade);
+}
+.blk { background: var(--cage); padding: 14px 16px; min-width: 0; }
+.blk.magia { grid-column: span 2; }
+.blk.nimbus { grid-column: span 2; }
+.blk.objetivos { grid-column: span 2; }
+.blk h3 {
+  margin: 0 0 8px;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--couro);
+  border-bottom: 1px solid var(--grade);
+  padding-bottom: 4px;
+}
+@media (max-width: 980px) {
+  .sheet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .sheet-grid { grid-template-columns: 1fr; }
+  .blk.magia, .blk.nimbus, .blk.objetivos { grid-column: auto; }
+}
+
+/* chave/valor */
+.kv { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; }
+.kv dt { font-family: var(--f-mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--giz-2); padding-top: 3px; white-space: nowrap; }
+.kv dd { margin: 0; font-weight: 500; }
+.kv dd.muted, .muted { color: var(--giz-2); font-weight: 400; font-style: italic; }
+
+/* traços com pontos */
+.traits { list-style: none; margin: 0; padding: 0; }
+.traits li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 2px 0; }
+.traits li.gap { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--grade); }
+.traits li > span:first-child { min-width: 0; }
+.spec { font-style: italic; color: var(--couro); font-size: .92em; }
+.spec::before { content: " ("; }
+.spec::after  { content: ")"; }
+.dots { display: inline-flex; gap: 3px; flex-shrink: 0; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--giz); }
+.dots i.on { background: var(--giz); }
+.traits.arcana li { font-family: var(--f-display); font-size: 1.15rem; letter-spacing: .06em; text-transform: uppercase; }
+.traits.arcana .dots i { border-color: var(--sodio); }
+.traits.arcana .dots i.on { background: var(--sodio); }
+
+/* derivadas */
+.nums { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 4px; }
+.nums li { display: flex; flex-direction: column; align-items: flex-start; }
+.nums b { font-family: var(--f-display); font-weight: 700; font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.nums span { font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--giz-2); margin-top: 2px; }
+.fine { margin: 10px 0 0; font-size: .74rem; color: var(--giz-2); }
+
+/* feitiços e méritos */
+.spells, .merits { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.spells { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--grade); }
+.spells li b, .merits li b { font-weight: 600; }
+.spells li p, .merits li p { margin: 1px 0 0; color: var(--giz-2); }
+.tag {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--sodio);
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.tag.praxis { color: var(--costura); }
+.merits li i { font-style: italic; color: var(--giz); }
+
+/* ---------- rodapé ---------- */
+.foot {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px var(--gutter) calc(28px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--grade);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 20px;
+  font-size: .78rem;
+  color: var(--giz-2);
+}
+
+@media (max-width: 560px) {
+  .nav { gap: 12px; }
+  .nav a { font-size: .7rem; letter-spacing: .1em; }
+}
+
+/* ============================================================
+   efeitos: letras divididas, tremor cinético, vazio
+   ============================================================ */
+.w { display: inline-block; white-space: nowrap; }
+.ch { display: inline-block; }
+.cap { display: block; }
+
+@keyframes kin {
+  0%   { transform: translate(calc(var(--k) * 1px),   calc(var(--k) * -.6px)) rotate(calc(var(--k) * 1.2deg)); }
+  25%  { transform: translate(calc(var(--k) * -.8px), calc(var(--k) * .9px))  rotate(calc(var(--k) * -1deg)); }
+  50%  { transform: translate(calc(var(--k) * .6px),  calc(var(--k) * 1px))   rotate(calc(var(--k) * .8deg)); }
+  75%  { transform: translate(calc(var(--k) * -1px),  calc(var(--k) * -.7px)) rotate(calc(var(--k) * -1.3deg)); }
+  100% { transform: translate(calc(var(--k) * .9px),  calc(var(--k) * -.4px)) rotate(calc(var(--k) * 1.1deg)); }
+}
+/* --k: amplitude do tremor · --c: quanto de amarelo (0 a 100) */
+.ch.kin {
+  --k: 1;
+  --c: 40;
+  animation: kin .11s steps(1) infinite;
+  color: color-mix(in srgb, currentColor calc(100% - var(--c) * 1%), var(--sodio));
+  text-shadow: 0 0 6px color-mix(in srgb, var(--sodio) calc(var(--c) * 1%), transparent);
+}
+.ch.kin:nth-child(2n)   { animation-delay: -.03s; }
+.ch.kin:nth-child(3n)   { animation-delay: -.07s; animation-direction: reverse; }
+.ch.kin:nth-child(5n)   { animation-duration: .09s; }
+
+.fx-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* "space" e "force": a página some, a grade do hero sai, o vórtice toma a tela */
+.focus, .focus body { overflow: hidden; background: var(--asfalto); }
+.focus body > header, .focus body > footer, .focus main > *:not(.hero),
+.focus .hero-inner, .focus .hero::before { opacity: 0; }
+.focus .vortex {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+/* ARCANA ●●● */
+.arcana {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.arcana.on { opacity: 1; }
+.arcana.clickable { pointer-events: auto; cursor: pointer; }
+.arcana h1 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: clamp(4.5rem, 20vw, 14rem);
+  line-height: .85;
+  letter-spacing: .06em;
+  color: var(--giz);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--sodio) 30%, transparent);
+}
+.arcana-dots { display: flex; gap: 14px; }
+.arcana-dots i {
+  width: clamp(16px, 3vw, 26px);
+  height: clamp(16px, 3vw, 26px);
+  border-radius: 50%;
+  border: 2px solid var(--sodio);
+  background: var(--sodio);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--sodio) 60%, transparent);
+}
