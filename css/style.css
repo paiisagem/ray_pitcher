@@ -312,6 +312,16 @@ b { font-weight: 600; }
 /* a bola de beisebol substitui o cursor; o canvas dela fica acima de tudo que não seja ARCANA */
 .has-ball, .has-ball a, .has-ball button { cursor: none; }
 #cursor-gyro { z-index: 90; }
+#cursor-ball {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 91;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+  will-change: transform;
+}
 
 .fx-canvas {
   position: fixed;
