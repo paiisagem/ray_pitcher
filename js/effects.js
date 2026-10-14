@@ -59,12 +59,15 @@
       }
     });
 
-    let mx = -999, my = -999;      // mouse
-    let px = -999, py = -999;      // centro do giroscópio (segue com atraso)
+    let mx = -999, my = -999;      // mouse (onde a bola fica)
+    let px = -999, py = -999;      // centro dos anéis (segue com atraso)
+    let bx = -999, by = -999;      // onde a bola foi desenhada no quadro anterior
     let inside = false;
     let lastMove = 0;
-    let spin = 0, boost = 0, vis = 0;
+    let spin = 0, boost = 0, vis = 0, ballRot = 0;
     let last = performance.now();
+
+    document.documentElement.classList.add('has-ball');   // esconde o cursor nativo
 
     document.addEventListener('mousemove', e => {
       if (!inside) { px = e.clientX; py = e.clientY; }
@@ -74,21 +77,61 @@
     });
     document.addEventListener('mouseleave', () => { inside = false; });
 
+    const BALL_R = 7;
+
+    function drawBall(x, y, rot, alpha) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.globalAlpha = alpha;
+      // couro com leve sombra
+      const g = ctx.createRadialGradient(-2, -2, 1, 0, 0, BALL_R);
+      g.addColorStop(0, '#fbf8f0');
+      g.addColorStop(1, '#cfc8b8');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, BALL_R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = 'rgba(40,34,28,0.7)';
+      ctx.stroke();
+      // duas costuras curvas, uma de cada lado
+      ctx.strokeStyle = '#c8322b';
+      ctx.lineWidth = 1.1;
+      ctx.lineCap = 'round';
+      const sr = BALL_R * 1.45, off = BALL_R * 1.55, span = 0.62;
+      ctx.beginPath(); ctx.arc(-off, 0, sr, -span, span); ctx.stroke();
+      ctx.beginPath(); ctx.arc(off, 0, sr, Math.PI - span, Math.PI + span); ctx.stroke();
+      // pontinhos de linha ao longo das costuras
+      ctx.lineWidth = 0.8;
+      for (let i = -2; i <= 2; i++) {
+        const a = i * span / 2.4;
+        const x1 = -off + Math.cos(a) * sr, y1 = Math.sin(a) * sr;
+        ctx.beginPath(); ctx.moveTo(x1 - 1.4, y1 - 0.9); ctx.lineTo(x1 + 1.4, y1 + 0.9); ctx.stroke();
+        const x2 = off - Math.cos(a) * sr, y2 = Math.sin(a) * sr;
+        ctx.beginPath(); ctx.moveTo(x2 - 1.4, y2 + 0.9); ctx.lineTo(x2 + 1.4, y2 - 0.9); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
     function frame(now) {
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
 
-      // o centro persegue o cursor; a distância vira impulso de rotação
+      // o centro dos anéis persegue a bola; a distância vira impulso de rotação
       const dx = mx - px, dy = my - py;
       px += dx * 0.22; py += dy * 0.22;
       const v = Math.hypot(dx, dy);
       boost += (Math.min(4, v / 18) - boost) * 0.1;
       spin += dt * (1 + boost);
+      ballRot += dt * (0.6 + boost * 2.2);
 
-      // visível com o mouse na página, meio apagado parado, some nos efeitos
+      // visível com o mouse na página, mais apagado parado, some nos efeitos
       const idle = now - lastMove > 1800;
-      const target = (!inside || fxRunning) ? 0 : (idle ? 0.45 : 1);
+      const target = (!inside || fxRunning) ? 0 : (idle ? 0.5 : 1);
       vis += (target - vis) * 0.08;
 
+      // limpa a bola do quadro anterior por inteiro (sem rastro no cursor)
+      ctx.clearRect(bx - BALL_R - 3, by - BALL_R - 3, BALL_R * 2 + 6, BALL_R * 2 + 6);
       ctx.globalCompositeOperation = 'destination-out';
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.fillRect(0, 0, W, H);
@@ -105,11 +148,19 @@
           const x = px + lx * Math.cos(phi) - ly * Math.sin(phi);
           const y = py + lx * Math.sin(phi) + ly * Math.cos(phi);
           // a metade "de trás" do anel fica mais fraca: dá volume
-          const depth = 0.55 + 0.45 * (Math.sin(a) + 1) / 2;
-          const al = vis * depth * (d.warm ? 0.95 : 0.7);
+          const depth = 0.5 + 0.5 * (Math.sin(a) + 1) / 2;
+          // opacidade baixa de propósito: não pode brigar com o texto
+          const al = vis * depth * (d.warm ? 0.42 : 0.28);
           ctx.fillStyle = d.warm ? 'rgba(255,182,72,' + al + ')' : 'rgba(239,232,216,' + al + ')';
           ctx.fillRect(x - d.s / 2, y - d.s / 2, d.s, d.s);
         }
+      }
+
+      if (inside && !fxRunning) {
+        drawBall(mx, my, ballRot, 1);
+        bx = mx; by = my;
+      } else {
+        bx = by = -999;
       }
       requestAnimationFrame(frame);
     }

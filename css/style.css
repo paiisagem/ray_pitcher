@@ -309,6 +309,10 @@ b { font-weight: 600; }
 /* ============================================================
    efeitos: canvas por cima da página, foco no hero, ARCANA
    ============================================================ */
+/* a bola de beisebol substitui o cursor; o canvas dela fica acima de tudo que não seja ARCANA */
+.has-ball, .has-ball a, .has-ball button { cursor: none; }
+#cursor-gyro { z-index: 90; }
+
 .fx-canvas {
   position: fixed;
   inset: 0;
